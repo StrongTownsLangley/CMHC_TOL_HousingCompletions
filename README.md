@@ -69,7 +69,18 @@ Notes:
   2024-2025: derived from cumulative monthly CSD data.
 ```
 
-## Data source
+## Charts
+
+langley_completions_population.html
+
+<img width="1200" height="800" alt="langley_housing_completions" src="https://github.com/user-attachments/assets/6c288120-d05b-4bdf-9424-46b1a946ff0c" />
+
+langley_housing_completions.html
+
+<img width="1200" height="1300" alt="langley_completions_population" src="https://github.com/user-attachments/assets/fb12a0c6-e767-43d4-b010-147d808a5783" />
+
+
+## CMHC Data source
 
 All data comes from the [CMHC Starts and Completions Survey](https://www.cmhc-schl.gc.ca/professionals/housing-markets-data-and-research/housing-research/surveys/methods/methodologies-starts-completions-market-absorption-survey). A "completion" means all proposed construction work has been performed (up to 10% remaining is permitted). This is the closest available measure to "move-in ready" at the municipal level.
 
@@ -78,3 +89,7 @@ https://www.cmhc-schl.gc.ca/professionals/housing-markets-data-and-research/hous
 
 2024+:
 https://www.cmhc-schl.gc.ca/professionals/housing-markets-data-and-research/housing-data/data-tables/housing-market-data/starts-completions-under-construction-census-subdivisions
+
+## Population Data
+
+Population data comes from https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-estimates
