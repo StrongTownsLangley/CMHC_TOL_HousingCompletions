@@ -1,6 +1,6 @@
 # CMHC Housing Completions — Township of Langley
 
-A Python script that downloads and compiles CMHC housing completions data for the Township of Langley (DM), producing a single time series of move-in ready units from 2010 to 2025.
+A Python script that downloads and compiles CMHC housing completions data for the Township of Langley (Langley DM (District Municipality)), producing a single time series of move-in ready units from 2010 to 2025.
 
 ## Why this exists
 
