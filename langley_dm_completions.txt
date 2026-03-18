@@ -1,0 +1,35 @@
+====================================================================
+HOUSING COMPLETIONS - TOWNSHIP OF LANGLEY (DM)
+Source: CMHC Starts and Completions Survey
+====================================================================
+
+  Year    Single    Semi     Row      Apt    Total  Note
+--------------------------------------------------------------------
+  2010       218      12     244      308      782  
+  2011       199       2     391      396      988  
+  2012       219       2     348      614     1183  
+  2013       310       4     201      443      958  
+  2014       262      18     384      515     1179  
+  2015       275      14     459      271     1019  
+  2016       243      20     500      438     1201  
+  2017       420      34     713      435     1602  
+  2018       364       4     323      670     1361  
+  2019       273      28     207      583     1091  
+  2020       275      50     404      458     1187  
+  2021       253      46     563      977     1839  
+  2022       336      42     559     1581     2518  
+  2023       363     120     512     1103     2098  
+  2024       403      76     359     1242     2080  
+  2025       248      84     477     1232     2041  
+--------------------------------------------------------------------
+                                              2115  5-yr avg (2021-2025)
+                                              1445  avg all full years (16 yrs)
+
+Units under construction as of December 2025: 2,493
+
+Notes:
+  'Completions' = move-in ready units per CMHC (all proposed
+  construction work performed, or up to 10% remaining).
+  '--' or missing values treated as 0.
+  2010-2023: annual 'Housing Completions by Dwelling Type' tables.
+  2024-2025: derived from cumulative monthly CSD data.
