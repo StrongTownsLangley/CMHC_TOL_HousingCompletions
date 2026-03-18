@@ -1,0 +1,22 @@
+Township of Langley Population Estimates, 2010-2025
+Source: BC Stats, July 1 estimates
+https://www2.gov.bc.ca/gov/content/data/statistics/people-population-community/population/population-estimates
+ 
+Year	Population
+2010	105,034
+2011	106,660
+2012	109,593
+2013	112,732
+2014	115,782
+2015	118,728
+2016	122,977
+2017	126,952
+2018	130,658
+2019	133,383
+2020	135,885
+2021	138,426
+2022	146,351
+2023	153,977
+2024	161,841
+2025	163,885
+ 

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Housing Completions — Township of Langley</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f6f5f1;
+    color: #2c2c2a;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    max-width: 960px;
+    width: 100%;
+    padding: 2.5rem 2.5rem 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+    overflow: visible;
+  }
+
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .header h1 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #1a1a1a;
+    line-height: 1.3;
+  }
+
+  .header p {
+    font-size: 0.82rem;
+    color: #888780;
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .export-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 8px 18px;
+    border: 1.5px solid #d3d1c7;
+    border-radius: 8px;
+    background: #fff;
+    color: #2c2c2a;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .export-btn:hover {
+    background: #f6f5f1;
+    border-color: #b4b2a9;
+  }
+
+  .export-btn:active {
+    transform: scale(0.97);
+  }
+
+  .export-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-bottom: 1.25rem;
+    font-size: 0.78rem;
+    color: #888780;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .legend-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .chart-outer {
+    overflow: visible;
+  }
+
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    overflow: visible;
+  }
+
+  canvas {
+    display: block;
+  }
+
+  .footer {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f1efe8;
+    font-size: 0.72rem;
+    color: #b4b2a9;
+    font-family: 'DM Mono', monospace;
+  }
+
+  @media (max-width: 600px) {
+    .card { padding: 1.5rem; }
+    .chart-wrap { height: 300px; }
+    .header { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <div>
+      <h1>Housing completions, Township of Langley</h1>
+      <p>2010 – 2025 &middot; by dwelling type</p>
+    </div>
+    <button class="export-btn" id="exportBtn">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export PNG
+    </button>
+  </div>
+
+  <div class="legend">
+    <span class="legend-item"><span class="legend-swatch" style="background:#3266ad"></span>Single</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#1D9E75"></span>Duplex</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#D85A30"></span>Row</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#534AB7"></span>Apartment</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#73726c;border:1.5px dashed #73726c;background:transparent"></span>Total</span>
+  </div>
+
+  <div class="chart-outer">
+    <div class="chart-wrap">
+      <canvas id="housingChart"></canvas>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Source: CMHC Starts and Completions Survey</span>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+var years  = ['2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'];
+var single = [218,199,219,310,262,275,243,420,364,273,275,253,336,363,403,248];
+var duplex = [12,2,2,4,18,14,20,34,4,28,50,46,42,120,76,84];
+var row    = [244,391,348,201,384,459,500,713,323,207,404,563,559,512,359,477];
+var apt    = [308,396,614,443,515,271,438,435,670,583,458,977,1581,1103,1242,1232];
+var total  = [782,988,1183,958,1179,1019,1201,1602,1361,1091,1187,1839,2518,2098,2080,2041];
+
+function makeDataset(label, data, color, opts) {
+  opts = opts || {};
+  return {
+    label: label,
+    data: data,
+    borderColor: color,
+    backgroundColor: color + '12',
+    borderWidth: opts.width || 2,
+    pointRadius: 3,
+    pointBackgroundColor: '#fff',
+    pointBorderColor: color,
+    pointBorderWidth: 1.5,
+    pointHoverRadius: 5,
+    pointHoverBackgroundColor: color,
+    tension: 0.3,
+    fill: false,
+    borderDash: opts.dash ? [6, 4] : undefined
+  };
+}
+
+function getDatasets() {
+  return [
+    makeDataset('Total', total, '#73726c', { width: 2.5, dash: true }),
+    makeDataset('Apartment', apt, '#534AB7'),
+    makeDataset('Row', row, '#D85A30'),
+    makeDataset('Single', single, '#3266ad'),
+    makeDataset('Duplex', duplex, '#1D9E75')
+  ];
+}
+
+function getChartConfig(animated, fontSize) {
+  var fs = fontSize || 11;
+  return {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: getDatasets()
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: animated ? undefined : false,
+      layout: {
+        padding: { left: 4, right: 8, top: 8, bottom: 0 }
+      },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#fff',
+          titleColor: '#1a1a1a',
+          bodyColor: '#5f5e5a',
+          borderColor: '#e8e7e3',
+          borderWidth: 1,
+          padding: 12,
+          bodySpacing: 5,
+          titleFont: { family: "'DM Sans'", weight: '600', size: 13 },
+          bodyFont: { family: "'DM Sans'", size: 12 },
+          cornerRadius: 8,
+          displayColors: true,
+          boxWidth: 8,
+          boxHeight: 8,
+          boxPadding: 4,
+          callbacks: {
+            label: function(ctx) {
+              return ' ' + ctx.dataset.label + ':  ' + ctx.parsed.y.toLocaleString();
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#b4b2a9', font: { family: "'DM Mono'", size: fs }, autoSkip: false, maxRotation: 0 },
+          grid: { display: false },
+          border: { color: '#e8e7e3' }
+        },
+        y: {
+          beginAtZero: true,
+          max: 3000,
+          ticks: {
+            color: '#b4b2a9',
+            font: { family: "'DM Mono'", size: fs },
+            callback: function(v) { return v.toLocaleString(); },
+            stepSize: 500,
+            mirror: false
+          },
+          afterFit: function(axis) {
+            axis.width = axis.width + 8;
+          },
+          grid: { color: '#f1efe8' },
+          border: { display: false }
+        }
+      }
+    }
+  };
+}
+
+new Chart(document.getElementById('housingChart'), getChartConfig(true));
+
+document.getElementById('exportBtn').addEventListener('click', function() {
+  var W = 1200;
+  var H = 800;
+  var pad = 72;
+  var chartTop = 200;
+  var chartBottom = 80;
+  var chartH = H - chartTop - chartBottom;
+  var chartW = W - pad * 2;
+
+  var offCanvas = document.createElement('canvas');
+  offCanvas.width = chartW;
+  offCanvas.height = chartH;
+
+  var wrapper = document.createElement('div');
+  wrapper.style.cssText = 'position:fixed;left:-9999px;width:' + chartW + 'px;height:' + chartH + 'px;';
+  wrapper.appendChild(offCanvas);
+  document.body.appendChild(wrapper);
+
+  var offChart = new Chart(offCanvas, getChartConfig(false, 16));
+
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      var exportCanvas = document.createElement('canvas');
+      exportCanvas.width = W;
+      exportCanvas.height = H;
+      var ctx = exportCanvas.getContext('2d');
+
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.font = '600 32px DM Sans, sans-serif';
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillText('Housing completions, Township of Langley', pad, pad + 6);
+
+      ctx.font = '400 16px DM Mono, monospace';
+      ctx.fillStyle = '#888780';
+      ctx.fillText('2010 \u2013 2025 \u00b7 by dwelling type', pad, pad + 36);
+
+      var legendY = pad + 72;
+      var colours = [
+        { label: 'Single', color: '#3266ad' },
+        { label: 'Duplex', color: '#1D9E75' },
+        { label: 'Row', color: '#D85A30' },
+        { label: 'Apartment', color: '#534AB7' },
+        { label: 'Total', color: '#73726c', dashed: true }
+      ];
+      var lx = pad;
+      ctx.font = '400 14px DM Sans, sans-serif';
+      colours.forEach(function(c) {
+        if (c.dashed) {
+          ctx.strokeStyle = c.color;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 3]);
+          ctx.strokeRect(lx, legendY - 9, 12, 12);
+          ctx.setLineDash([]);
+        } else {
+          ctx.fillStyle = c.color;
+          ctx.beginPath();
+          ctx.roundRect(lx, legendY - 9, 12, 12, 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#888780';
+        ctx.fillText(c.label, lx + 18, legendY + 2);
+        lx += ctx.measureText(c.label).width + 42;
+      });
+
+      ctx.drawImage(offCanvas, pad, chartTop, chartW, chartH);
+
+      offChart.destroy();
+      document.body.removeChild(wrapper);
+
+      ctx.font = '400 13px DM Mono, monospace';
+      ctx.fillStyle = '#b4b2a9';
+      ctx.fillText('Source: CMHC Starts and Completions Survey', pad, H - 32);
+
+      var link = document.createElement('a');
+      link.download = 'langley_housing_completions.png';
+      link.href = exportCanvas.toDataURL('image/png');
+      link.click();
+    });
+  });
+});
+</script>
+</body>
+</html>

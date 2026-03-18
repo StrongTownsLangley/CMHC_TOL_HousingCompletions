@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Housing Completions &amp; Population — Township of Langley</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f6f5f1;
+    color: #2c2c2a;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    max-width: 960px;
+    width: 100%;
+    padding: 2.5rem 2.5rem 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+    overflow: visible;
+  }
+
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .header h1 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #1a1a1a;
+    line-height: 1.3;
+  }
+
+  .header p {
+    font-size: 0.82rem;
+    color: #888780;
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .export-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 8px 18px;
+    border: 1.5px solid #d3d1c7;
+    border-radius: 8px;
+    background: #fff;
+    color: #2c2c2a;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .export-btn:hover { background: #f6f5f1; border-color: #b4b2a9; }
+  .export-btn:active { transform: scale(0.97); }
+
+  .export-btn svg {
+    width: 15px; height: 15px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .metric {
+    background: #faf9f7;
+    border-radius: 10px;
+    padding: 1rem 1.15rem;
+  }
+
+  .metric-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #b4b2a9;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+
+  .metric-value {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
+  }
+
+  .metric-sub {
+    font-size: 0.72rem;
+    color: #b4b2a9;
+    margin-top: 2px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .panel {
+    margin-bottom: 2rem;
+  }
+
+  .panel:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .panel-title {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #5f5e5a;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-title .dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .chart-wrap.tall { height: 300px; }
+  .chart-wrap.short { height: 200px; }
+
+  canvas { display: block; }
+
+  .divider {
+    height: 1px;
+    background: #f1efe8;
+    margin: 1.5rem 0;
+  }
+
+  .footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f1efe8;
+    font-size: 0.72rem;
+    color: #b4b2a9;
+    font-family: 'DM Mono', monospace;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  @media (max-width: 600px) {
+    .card { padding: 1.5rem; }
+    .chart-wrap.tall { height: 240px; }
+    .chart-wrap.short { height: 160px; }
+    .header { flex-direction: column; }
+    .metrics { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <div>
+      <h1>Housing completions &amp; population growth</h1>
+      <p>Township of Langley &middot; 2010 – 2025</p>
+    </div>
+    <button class="export-btn" id="exportBtn">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export PNG
+    </button>
+  </div>
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label">Total completions (2025)</div>
+      <div class="metric-value">2,041</div>
+      <div class="metric-sub">16-yr total: 24,127</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Population (2025)</div>
+      <div class="metric-value">163,885</div>
+      <div class="metric-sub">+56% since 2010</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Completions / population</div>
+      <div class="metric-value">1.25%</div>
+      <div class="metric-sub">16-yr avg: 1.04%</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">
+      <span class="dot" style="background:#3266ad"></span> Total completions
+      <span style="color:#b4b2a9; font-weight:400;">&amp;</span>
+      <span class="dot" style="background:#D85A30"></span> Population
+    </div>
+    <div class="chart-wrap tall">
+      <canvas id="dualChart"></canvas>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="panel">
+    <div class="panel-title">
+      <span class="dot" style="background:#534AB7"></span> Completions as % of population
+    </div>
+    <div class="chart-wrap short">
+      <canvas id="ratioChart"></canvas>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Housing: CMHC Starts and Completions Survey</span>
+    <span>Population: BC Stats, July 1 estimates</span>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+var years  = ['2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025'];
+var completions = [782,988,1183,958,1179,1019,1201,1602,1361,1091,1187,1839,2518,2098,2080,2041];
+var population  = [105034,106660,109593,112732,115782,118728,122977,126952,130658,133383,135885,138426,146351,153977,161841,163885];
+var ratio = completions.map(function(c, i) {
+  return Math.round((c / population[i]) * 10000) / 100;
+});
+
+var BLUE   = '#3266ad';
+var CORAL  = '#D85A30';
+var PURPLE = '#534AB7';
+var GRID   = '#f1efe8';
+var TICK   = '#b4b2a9';
+
+function getDualConfig(animated, fs) {
+  fs = fs || 11;
+  return {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        {
+          label: 'Total completions',
+          data: completions,
+          borderColor: BLUE,
+          backgroundColor: BLUE + '18',
+          borderWidth: 2.5,
+          pointRadius: 3,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: BLUE,
+          pointBorderWidth: 1.5,
+          pointHoverRadius: 5,
+          tension: 0.3,
+          fill: true,
+          yAxisID: 'y'
+        },
+        {
+          label: 'Population',
+          data: population,
+          borderColor: CORAL,
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: CORAL,
+          pointBorderWidth: 1.5,
+          pointHoverRadius: 5,
+          tension: 0.3,
+          fill: false,
+          borderDash: [6, 4],
+          yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: animated ? undefined : false,
+      layout: { padding: { left: 4, right: 4, top: 8 } },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#fff',
+          titleColor: '#1a1a1a',
+          bodyColor: '#5f5e5a',
+          borderColor: '#e8e7e3',
+          borderWidth: 1,
+          padding: 12,
+          bodySpacing: 5,
+          titleFont: { family: "'DM Sans'", weight: '600', size: 13 },
+          bodyFont: { family: "'DM Sans'", size: 12 },
+          cornerRadius: 8,
+          displayColors: true,
+          boxWidth: 8, boxHeight: 8, boxPadding: 4,
+          callbacks: {
+            label: function(ctx) {
+              return ' ' + ctx.dataset.label + ':  ' + ctx.parsed.y.toLocaleString();
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: TICK, font: { family: "'DM Mono'", size: fs }, autoSkip: false, maxRotation: 0 },
+          grid: { display: false },
+          border: { color: '#e8e7e3' }
+        },
+        y: {
+          type: 'linear',
+          position: 'left',
+          beginAtZero: true,
+          max: 3000,
+          title: { display: true, text: 'Completions', color: BLUE, font: { family: "'DM Sans'", size: fs, weight: '500' } },
+          ticks: {
+            color: BLUE,
+            font: { family: "'DM Mono'", size: fs },
+            callback: function(v) { return v.toLocaleString(); },
+            stepSize: 500
+          },
+          afterFit: function(axis) { axis.width = axis.width + 8; },
+          grid: { color: GRID },
+          border: { display: false }
+        },
+        y1: {
+          type: 'linear',
+          position: 'right',
+          min: 80000,
+          max: 180000,
+          title: { display: true, text: 'Population', color: CORAL, font: { family: "'DM Sans'", size: fs, weight: '500' } },
+          ticks: {
+            color: CORAL,
+            font: { family: "'DM Mono'", size: fs },
+            callback: function(v) { return (v / 1000).toFixed(0) + 'k'; },
+            stepSize: 20000
+          },
+          grid: { display: false },
+          border: { display: false }
+        }
+      }
+    }
+  };
+}
+
+function getRatioConfig(animated, fs) {
+  fs = fs || 11;
+  return {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [{
+        label: 'Completions / population',
+        data: ratio,
+        borderColor: PURPLE,
+        backgroundColor: PURPLE + '18',
+        borderWidth: 2.5,
+        pointRadius: 3,
+        pointBackgroundColor: '#fff',
+        pointBorderColor: PURPLE,
+        pointBorderWidth: 1.5,
+        pointHoverRadius: 5,
+        tension: 0.3,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: animated ? undefined : false,
+      layout: { padding: { left: 4, right: 4, top: 8 } },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#fff',
+          titleColor: '#1a1a1a',
+          bodyColor: '#5f5e5a',
+          borderColor: '#e8e7e3',
+          borderWidth: 1,
+          padding: 12,
+          titleFont: { family: "'DM Sans'", weight: '600', size: 13 },
+          bodyFont: { family: "'DM Sans'", size: 12 },
+          cornerRadius: 8,
+          displayColors: true,
+          boxWidth: 8, boxHeight: 8, boxPadding: 4,
+          callbacks: {
+            label: function(ctx) {
+              return ' ' + ctx.parsed.y.toFixed(2) + '%';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: TICK, font: { family: "'DM Mono'", size: fs }, autoSkip: false, maxRotation: 0 },
+          grid: { display: false },
+          border: { color: '#e8e7e3' }
+        },
+        y: {
+          min: 0,
+          max: 2,
+          ticks: {
+            color: TICK,
+            font: { family: "'DM Mono'", size: fs },
+            callback: function(v) { return v.toFixed(1) + '%'; },
+            stepSize: 0.5
+          },
+          afterFit: function(axis) { axis.width = axis.width + 8; },
+          grid: { color: GRID },
+          border: { display: false }
+        }
+      }
+    }
+  };
+}
+
+new Chart(document.getElementById('dualChart'), getDualConfig(true));
+new Chart(document.getElementById('ratioChart'), getRatioConfig(true));
+
+document.getElementById('exportBtn').addEventListener('click', function() {
+  var W = 1200;
+  var H = 1300;
+  var pad = 72;
+
+  var chart1Top = 260;
+  var chart1H = 480;
+  var chart2Top = chart1Top + chart1H + 120;
+  var chart2H = 320;
+  var chartW = W - pad * 2;
+
+  var offCanvas1 = document.createElement('canvas');
+  offCanvas1.width = chartW;
+  offCanvas1.height = chart1H;
+  var wrap1 = document.createElement('div');
+  wrap1.style.cssText = 'position:fixed;left:-9999px;width:' + chartW + 'px;height:' + chart1H + 'px;';
+  wrap1.appendChild(offCanvas1);
+  document.body.appendChild(wrap1);
+
+  var offCanvas2 = document.createElement('canvas');
+  offCanvas2.width = chartW;
+  offCanvas2.height = chart2H;
+  var wrap2 = document.createElement('div');
+  wrap2.style.cssText = 'position:fixed;left:-9999px;width:' + chartW + 'px;height:' + chart2H + 'px;';
+  wrap2.appendChild(offCanvas2);
+  document.body.appendChild(wrap2);
+
+  var off1 = new Chart(offCanvas1, getDualConfig(false, 16));
+  var off2 = new Chart(offCanvas2, getRatioConfig(false, 16));
+
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      var exportCanvas = document.createElement('canvas');
+      exportCanvas.width = W;
+      exportCanvas.height = H;
+      var ctx = exportCanvas.getContext('2d');
+
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.font = '600 34px DM Sans, sans-serif';
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillText('Housing completions & population growth', pad, pad + 6);
+
+      ctx.font = '400 16px DM Mono, monospace';
+      ctx.fillStyle = '#888780';
+      ctx.fillText('Township of Langley \u00b7 2010 \u2013 2025', pad, pad + 38);
+
+      var mY = pad + 72;
+      var mW = (chartW - 24) / 3;
+      var metrics = [
+        { label: 'TOTAL COMPLETIONS (2025)', value: '2,041', sub: '16-yr total: 24,127' },
+        { label: 'POPULATION (2025)', value: '163,885', sub: '+56% since 2010' },
+        { label: 'COMPLETIONS / POPULATION', value: '1.25%', sub: '16-yr avg: 1.04%' }
+      ];
+      metrics.forEach(function(m, i) {
+        var mx = pad + i * (mW + 12);
+        ctx.fillStyle = '#faf9f7';
+        ctx.beginPath();
+        ctx.roundRect(mx, mY, mW, 80, 8);
+        ctx.fill();
+        ctx.font = '500 11px DM Sans, sans-serif';
+        ctx.fillStyle = '#b4b2a9';
+        ctx.fillText(m.label, mx + 16, mY + 24);
+        ctx.font = '600 26px DM Sans, sans-serif';
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillText(m.value, mx + 16, mY + 54);
+        ctx.font = '400 11px DM Mono, monospace';
+        ctx.fillStyle = '#b4b2a9';
+        ctx.fillText(m.sub, mx + 16, mY + 72);
+      });
+
+      function drawDot(cx, cy, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.roundRect(cx, cy, 10, 10, 2);
+        ctx.fill();
+      }
+
+      var lbl1Y = chart1Top - 20;
+      drawDot(pad, lbl1Y - 8, BLUE);
+      ctx.font = '500 14px DM Sans, sans-serif';
+      ctx.fillStyle = '#5f5e5a';
+      ctx.fillText('Total completions', pad + 16, lbl1Y);
+      ctx.fillStyle = '#b4b2a9';
+      ctx.fillText('&', pad + 142, lbl1Y);
+      drawDot(pad + 158, lbl1Y - 8, CORAL);
+      ctx.fillStyle = '#5f5e5a';
+      ctx.fillText('Population', pad + 174, lbl1Y);
+
+      ctx.drawImage(offCanvas1, pad, chart1Top, chartW, chart1H);
+
+      var lbl2Y = chart2Top - 20;
+      drawDot(pad, lbl2Y - 8, PURPLE);
+      ctx.fillStyle = '#5f5e5a';
+      ctx.font = '500 14px DM Sans, sans-serif';
+      ctx.fillText('Completions as % of population', pad + 16, lbl2Y);
+
+      ctx.drawImage(offCanvas2, pad, chart2Top, chartW, chart2H);
+
+      off1.destroy();
+      off2.destroy();
+      document.body.removeChild(wrap1);
+      document.body.removeChild(wrap2);
+
+      ctx.font = '400 13px DM Mono, monospace';
+      ctx.fillStyle = '#b4b2a9';
+      ctx.fillText('Housing: CMHC Starts and Completions Survey', pad, H - 48);
+      ctx.fillText('Population: BC Stats, July 1 estimates', pad, H - 30);
+
+      var link = document.createElement('a');
+      link.download = 'langley_completions_population.png';
+      link.href = exportCanvas.toDataURL('image/png');
+      link.click();
+    });
+  });
+});
+</script>
+</body>
+</html>
